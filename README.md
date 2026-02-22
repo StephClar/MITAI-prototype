@@ -45,35 +45,6 @@ In this prototype, the Nanopore step is simulated using a pre-existing labeled D
 
 ---
 
-## How to Run
-
-**1. Clone the repo**
-```bash
-git clone https://github.com/YOUR_USERNAME/MITAI-prototype.git
-cd MITAI-prototype
-```
-
-**2. Install dependencies**
-```bash
-pip install flask flask-cors scikit-learn pandas numpy
-```
-
-**3. Train the model** (one time only, ~2 minutes)
-```bash
-python model.py
-```
-
-**4. Start the server**
-```bash
-python app.py
-```
-
-**5. Open the app**
-
-Double-click `index.html` or open it in your browser. The app runs at `http://localhost:5000`
-
----
-
 ## Features
 
 - **Sequence Analysis** — paste any DNA/RNA sequence and get:
