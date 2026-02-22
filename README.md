@@ -61,11 +61,6 @@ In this prototype, the Nanopore step is simulated using a pre-existing labeled D
 
 ---
 
-## Project Structure
-
-
----
-
 
 ## 📌 Note on Dataset
 
