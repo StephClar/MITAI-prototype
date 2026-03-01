@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MITAI — Genomic Intelligence Platform</title>
+<title>MITAI — Cancer Mutation Detection</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --teal: #00e5cc;
-    --teal-dim: #00b09b;
     --dark: #050d12;
     --panel: #0a1a22;
     --panel2: #0d2030;
@@ -19,475 +19,180 @@
     --yellow: #ffd700;
     --green: #00ff99;
     --orange: #ff9500;
+    --critical: #ff2244;
   }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--dark); color:var(--text); font-family:'Exo 2',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,229,204,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,204,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  #helix-canvas { position:fixed; top:0; right:0; width:300px; height:100vh; opacity:0.15; pointer-events:none; z-index:0; }
 
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'Exo 2', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  .dna-bar { width:100%; height:3px; background:linear-gradient(90deg,transparent,var(--teal),#00ff99,var(--teal),transparent); background-size:200% 100%; animation:dnaFlow 3s linear infinite; }
+  @keyframes dnaFlow { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-  /* Animated grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,204,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,204,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  header { position:relative; z-index:1; padding:28px 48px 20px; display:flex; align-items:center; gap:20px; border-bottom:1px solid var(--border); }
+  .logo-wrap { display:flex; align-items:center; gap:16px; }
+  .logo-icon { width:50px; height:50px; border:2px solid var(--teal); border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Orbitron',monospace; font-weight:900; font-size:13px; color:var(--teal); animation:glowPulse 2s ease-in-out infinite; line-height:1.2; text-align:center; }
+  @keyframes glowPulse { 0%,100%{box-shadow:0 0 8px var(--teal)} 50%{box-shadow:0 0 24px var(--teal),0 0 48px rgba(0,229,204,0.3)} }
+  h1 { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:4px; color:var(--teal); text-shadow:0 0 20px rgba(0,229,204,0.4); }
+  .tagline { font-size:10px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; margin-top:3px; }
+  .header-badge { margin-left:16px; background:rgba(255,68,102,0.1); border:1px solid rgba(255,68,102,0.4); border-radius:20px; padding:4px 14px; font-size:10px; color:var(--red); letter-spacing:2px; font-family:'Orbitron',monospace; }
+  .disclaimer { margin-left:auto; font-size:10px; color:var(--text-dim); background:rgba(255,68,102,0.05); border:1px solid rgba(255,68,102,0.2); border-radius:6px; padding:8px 12px; max-width:240px; line-height:1.6; }
 
-  /* DNA strand animation top bar */
-  .dna-bar {
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--teal), #00ff99, var(--teal), transparent);
-    background-size: 200% 100%;
-    animation: dnaFlow 3s linear infinite;
-  }
-  @keyframes dnaFlow {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+  .tabs { position:relative; z-index:1; display:flex; padding:0 48px; border-bottom:1px solid var(--border); }
+  .tab { padding:14px 28px; font-family:'Orbitron',monospace; font-size:10px; letter-spacing:2px; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.3s; text-transform:uppercase; }
+  .tab.active { color:var(--teal); border-bottom-color:var(--teal); }
+  .tab:hover:not(.active) { color:var(--text); }
 
-  header {
-    position: relative;
-    z-index: 1;
-    padding: 32px 48px 24px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+  main { position:relative; z-index:1; padding:36px 48px; max-width:1200px; margin:0 auto; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 
-  .logo-icon {
-    width: 48px;
-    height: 48px;
-    border: 2px solid var(--teal);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Orbitron', monospace;
-    font-weight: 900;
-    font-size: 14px;
-    color: var(--teal);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 8px var(--teal); }
-    50% { box-shadow: 0 0 24px var(--teal), 0 0 48px rgba(0,229,204,0.3); }
-  }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:24px; position:relative; overflow:hidden; margin-bottom:16px; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--teal),transparent); }
+  .card-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:3px; color:var(--teal); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .card-title::before { content:''; width:6px; height:6px; background:var(--teal); border-radius:50%; animation:glowPulse 1.5s ease-in-out infinite; }
 
-  h1 {
-    font-family: 'Orbitron', monospace;
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--teal);
-    text-shadow: 0 0 20px rgba(0,229,204,0.5);
-  }
+  textarea { width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Share Tech Mono',monospace; font-size:13px; padding:14px; resize:vertical; outline:none; transition:border-color 0.3s; line-height:1.6; }
+  textarea:focus { border-color:var(--teal); box-shadow:0 0 12px rgba(0,229,204,0.08); }
+  textarea.valid { border-color:var(--green); }
+  textarea.invalid { border-color:var(--red); }
+  textarea::placeholder { color:var(--text-dim); }
 
-  .subtitle {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
+  .validation-bar { margin-top:8px; display:flex; align-items:center; justify-content:space-between; font-family:'Share Tech Mono',monospace; font-size:11px; min-height:18px; }
+  .val-status { display:flex; align-items:center; gap:6px; }
+  .val-dot { width:6px; height:6px; border-radius:50%; background:var(--text-dim); transition:background 0.3s; }
+  .val-dot.ok { background:var(--green); }
+  .val-dot.err { background:var(--red); }
+  .val-msg { color:var(--text-dim); }
+  .val-msg.ok { color:var(--green); }
+  .val-msg.err { color:var(--red); }
+  .val-count { color:var(--text-dim); }
 
-  .disclaimer {
-    margin-left: auto;
-    font-size: 10px;
-    color: var(--text-dim);
-    background: rgba(255,68,102,0.1);
-    border: 1px solid rgba(255,68,102,0.3);
-    border-radius: 4px;
-    padding: 8px 12px;
-    max-width: 260px;
-    line-height: 1.5;
-  }
+  .sample-btn { background:none; border:1px solid var(--border); color:var(--text-dim); font-family:'Share Tech Mono',monospace; font-size:11px; padding:6px 12px; border-radius:4px; cursor:pointer; margin-top:8px; transition:all 0.2s; margin-right:6px; }
+  .sample-btn:hover { border-color:var(--teal); color:var(--teal); }
 
-  /* Tabs */
-  .tabs {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    gap: 0;
-    padding: 0 48px;
-    border-bottom: 1px solid var(--border);
-  }
+  .btn { width:100%; margin-top:16px; padding:15px; background:transparent; border:1px solid var(--teal); border-radius:8px; color:var(--teal); font-family:'Orbitron',monospace; font-size:11px; letter-spacing:3px; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
+  .btn::before { content:''; position:absolute; inset:0; background:var(--teal); transform:scaleX(0); transform-origin:left; transition:transform 0.3s; z-index:-1; }
+  .btn:hover { color:var(--dark); }
+  .btn:hover::before { transform:scaleX(1); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-  .tab {
-    padding: 16px 32px;
-    font-family: 'Orbitron', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.3s;
-    text-transform: uppercase;
-  }
+  .btn-pdf { width:100%; margin-top:10px; padding:12px; background:transparent; border:1px solid var(--green); border-radius:8px; color:var(--green); font-family:'Orbitron',monospace; font-size:10px; letter-spacing:2px; cursor:pointer; transition:all 0.3s; }
+  .btn-pdf:hover { background:var(--green); color:var(--dark); }
 
-  .tab.active {
-    color: var(--teal);
-    border-bottom-color: var(--teal);
-    text-shadow: 0 0 10px rgba(0,229,204,0.5);
-  }
+  .results { display:none; animation:fadeIn 0.4s ease; }
+  .results.show { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-  .tab:hover:not(.active) { color: var(--text); }
+  /* Status banner */
+  .status-banner { padding:18px 22px; border-radius:10px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; border:1px solid; }
+  .status-banner.low { border-color:var(--green); background:rgba(0,255,153,0.05); }
+  .status-banner.moderate { border-color:var(--yellow); background:rgba(255,215,0,0.05); }
+  .status-banner.high { border-color:var(--orange); background:rgba(255,149,0,0.05); }
+  .status-banner.critical { border-color:var(--critical); background:rgba(255,34,68,0.07); animation:criticalPulse 2s ease-in-out infinite; }
+  @keyframes criticalPulse { 0%,100%{box-shadow:0 0 0 rgba(255,34,68,0)} 50%{box-shadow:0 0 16px rgba(255,34,68,0.2)} }
+  .status-label { font-family:'Orbitron',monospace; font-size:16px; font-weight:700; }
+  .status-banner.low .status-label { color:var(--green); }
+  .status-banner.moderate .status-label { color:var(--yellow); }
+  .status-banner.high .status-label { color:var(--orange); }
+  .status-banner.critical .status-label { color:var(--critical); }
+  .risk-score { font-family:'Orbitron',monospace; font-size:30px; font-weight:900; }
 
-  /* Main content */
-  main {
-    position: relative;
-    z-index: 1;
-    padding: 40px 48px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+  /* Cancer alert box */
+  .cancer-alert { border-radius:8px; padding:14px 18px; margin-bottom:14px; border:1px solid; }
+  .cancer-alert.positive { border-color:rgba(255,68,102,0.5); background:rgba(255,68,102,0.07); }
+  .cancer-alert.negative { border-color:rgba(0,255,153,0.3); background:rgba(0,255,153,0.04); }
+  .cancer-alert-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:2px; margin-bottom:8px; }
+  .cancer-alert.positive .cancer-alert-title { color:var(--red); }
+  .cancer-alert.negative .cancer-alert-title { color:var(--green); }
+  .cancer-tag { display:inline-block; background:rgba(255,68,102,0.15); border:1px solid rgba(255,68,102,0.4); border-radius:4px; padding:3px 10px; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--red); margin:3px; }
+  .drug-tag { display:inline-block; background:rgba(0,229,204,0.1); border:1px solid rgba(0,229,204,0.3); border-radius:4px; padding:3px 10px; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--teal); margin:3px; }
 
-  .panel {
-    display: none;
-  }
-  .panel.active { display: block; }
+  .metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .metric { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; }
+  .metric-value { font-family:'Orbitron',monospace; font-size:18px; color:var(--teal); font-weight:700; }
+  .metric-label { font-size:9px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-top:5px; }
 
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
+  .info-row { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; margin-bottom:10px; }
+  .info-label { font-size:9px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:5px; }
+  .info-value { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text); }
 
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    position: relative;
-    overflow: hidden;
-  }
+  /* Mutation flags */
+  .mut-flag { border-radius:6px; padding:10px 14px; margin-bottom:8px; border-left:3px solid; }
+  .mut-flag.Critical { border-color:var(--critical); background:rgba(255,34,68,0.06); }
+  .mut-flag.High { border-color:var(--red); background:rgba(255,68,102,0.05); }
+  .mut-flag.Moderate { border-color:var(--orange); background:rgba(255,149,0,0.05); }
+  .mut-flag.Low { border-color:var(--yellow); background:rgba(255,215,0,0.04); }
+  .mut-flag-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; margin-bottom:4px; }
+  .mut-flag.Critical .mut-flag-title { color:var(--critical); }
+  .mut-flag.High .mut-flag-title { color:var(--red); }
+  .mut-flag.Moderate .mut-flag-title { color:var(--orange); }
+  .mut-flag.Low .mut-flag-title { color:var(--yellow); }
+  .mut-flag-detail { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); line-height:1.5; }
 
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--teal), transparent);
-  }
+  /* Confidence bars */
+  .conf-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .conf-label { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); width:190px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .conf-bar-wrap { flex:1; background:var(--panel); border-radius:999px; height:7px; overflow:hidden; }
+  .conf-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--teal),var(--green)); transition:width 0.8s ease; }
+  .conf-bar.highlighted { background:linear-gradient(90deg,var(--red),var(--orange)); }
+  .conf-pct { font-family:'Orbitron',monospace; font-size:10px; color:var(--teal); width:40px; text-align:right; flex-shrink:0; }
 
-  .card-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--teal);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  /* Codon grid */
+  .codon-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:8px; }
+  .codon-cell { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:8px 4px; text-align:center; }
+  .codon-cell.top1 { border-color:var(--teal); background:rgba(0,229,204,0.04); }
+  .codon-seq { font-family:'Orbitron',monospace; font-size:11px; color:var(--teal); font-weight:700; }
+  .codon-freq { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); margin-top:3px; }
 
-  .card-title::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--teal);
-    border-radius: 50%;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
+  /* Compat */
+  .compat-bar-wrap { background:var(--panel2); border-radius:999px; height:10px; overflow:hidden; margin:10px 0; border:1px solid var(--border); }
+  .compat-bar { height:100%; border-radius:999px; transition:width 1s ease; }
 
-  textarea {
-    width: 100%;
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    padding: 16px;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.3s;
-    line-height: 1.6;
-  }
+  .carrier-badge { display:inline-block; border-radius:4px; padding:4px 12px; font-family:'Share Tech Mono',monospace; font-size:11px; margin-top:4px; }
+  .carrier-badge.high { background:rgba(255,68,102,0.15); border:1px solid rgba(255,68,102,0.4); color:var(--red); }
+  .carrier-badge.low { background:rgba(0,255,153,0.1); border:1px solid rgba(0,255,153,0.3); color:var(--green); }
 
-  textarea:focus { border-color: var(--teal); box-shadow: 0 0 12px rgba(0,229,204,0.1); }
-  textarea::placeholder { color: var(--text-dim); }
+  .loader { display:none; text-align:center; padding:40px; }
+  .loader.show { display:block; }
+  .dna-loader { font-family:'Share Tech Mono',monospace; font-size:18px; color:var(--teal); letter-spacing:8px; animation:blink 0.8s steps(1) infinite; }
+  @keyframes blink { 50%{opacity:0.2} }
+  .loader-text { font-size:10px; color:var(--text-dim); letter-spacing:3px; text-transform:uppercase; margin-top:10px; }
 
-  .sample-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.2s;
-  }
-  .sample-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .error-msg { background:rgba(255,68,102,0.08); border:1px solid rgba(255,68,102,0.3); border-radius:8px; padding:14px; color:var(--red); font-family:'Share Tech Mono',monospace; font-size:12px; margin-top:14px; }
+  .base-comp { display:flex; gap:6px; flex-wrap:wrap; }
+  .base-pill { background:var(--panel2); border:1px solid var(--border); border-radius:20px; padding:3px 12px; font-family:'Share Tech Mono',monospace; font-size:11px; }
+  .no-flag { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--green); padding:8px 0; }
 
-  .btn {
-    width: 100%;
-    margin-top: 20px;
-    padding: 16px;
-    background: transparent;
-    border: 1px solid var(--teal);
-    border-radius: 8px;
-    color: var(--teal);
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    letter-spacing: 3px;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--teal);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s;
-    z-index: -1;
-  }
-
-  .btn:hover {
-    color: var(--dark);
-    text-shadow: none;
-  }
-  .btn:hover::before { transform: scaleX(1); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* Results */
-  .results {
-    margin-top: 24px;
-    display: none;
-    animation: fadeIn 0.4s ease;
-  }
-  .results.show { display: block; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .status-banner {
-    padding: 20px 24px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid;
-  }
-
-  .status-banner.normal { border-color: var(--green); background: rgba(0,255,153,0.05); }
-  .status-banner.low { border-color: var(--yellow); background: rgba(255,215,0,0.05); }
-  .status-banner.moderate { border-color: var(--orange); background: rgba(255,149,0,0.05); }
-  .status-banner.high { border-color: var(--red); background: rgba(255,68,102,0.05); }
-
-  .status-label {
-    font-family: 'Orbitron', monospace;
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .status-banner.normal .status-label { color: var(--green); }
-  .status-banner.low .status-label { color: var(--yellow); }
-  .status-banner.moderate .status-label { color: var(--orange); }
-  .status-banner.high .status-label { color: var(--red); }
-
-  .risk-score {
-    font-family: 'Orbitron', monospace;
-    font-size: 32px;
-    font-weight: 900;
-  }
-
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .metric {
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .metric-value {
-    font-family: 'Orbitron', monospace;
-    font-size: 20px;
-    color: var(--teal);
-    font-weight: 700;
-  }
-
-  .metric-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
-
-  .info-row {
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 12px;
-  }
-
-  .info-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .info-value {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .mutation-list {
-    list-style: none;
-  }
-
-  .mutation-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .mutation-list li:last-child { border-bottom: none; }
-
-  .mutation-list li.warn::before {
-    content: '⚠';
-    color: var(--orange);
-    flex-shrink: 0;
-  }
-
-  .mutation-list li.ok::before {
-    content: '✓';
-    color: var(--green);
-    flex-shrink: 0;
-  }
-
-  /* Progress bar for compatibility */
-  .compat-bar-wrap {
-    background: var(--panel2);
-    border-radius: 999px;
-    height: 12px;
-    overflow: hidden;
-    margin: 12px 0;
-    border: 1px solid var(--border);
-  }
-
-  .compat-bar {
-    height: 100%;
-    border-radius: 999px;
-    transition: width 1s ease;
-    background: linear-gradient(90deg, var(--teal), var(--green));
-  }
-
-  /* Loader */
-  .loader {
-    display: none;
-    text-align: center;
-    padding: 40px;
-  }
-  .loader.show { display: block; }
-
-  .dna-loader {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 20px;
-    color: var(--teal);
-    letter-spacing: 8px;
-    animation: blink 0.8s steps(1) infinite;
-  }
-
-  @keyframes blink { 50% { opacity: 0.2; } }
-
-  .loader-text {
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 12px;
-    animation: fadeIn 0.5s ease;
-  }
-
-  .error-msg {
-    background: rgba(255,68,102,0.1);
-    border: 1px solid rgba(255,68,102,0.4);
-    border-radius: 8px;
-    padding: 16px;
-    color: var(--red);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    margin-top: 16px;
-  }
-
-  .base-comp {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .base-pill {
-    background: var(--panel2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-  }
-
-  @media (max-width: 768px) {
-    header, .tabs, main { padding-left: 20px; padding-right: 20px; }
-    .grid-2, .metrics-grid { grid-template-columns: 1fr; }
+  @media(max-width:768px) {
+    header,.tabs,main{padding-left:20px;padding-right:20px}
+    .grid-2,.metrics-grid{grid-template-columns:1fr}
+    #helix-canvas{display:none}
   }
 </style>
 </head>
 <body>
 
+<canvas id="helix-canvas"></canvas>
 <div class="dna-bar"></div>
 
 <header>
-  <div class="logo-icon">MIT<br>AI</div>
-  <div>
-    <h1>MITAI</h1>
-    <div class="subtitle">Genomic Intelligence Platform · Proof of Concept</div>
+  <div class="logo-wrap">
+    <div class="logo-icon">MIT<br>AI</div>
+    <div>
+      <h1>MITAI</h1>
+      <div class="tagline">Cancer Mutation Detection · Genomic AI Platform</div>
+    </div>
+    <div class="header-badge">ONCOLOGY FOCUS</div>
   </div>
-  <div class="disclaimer">
-    ⚠ Research prototype only. Not for clinical use. All outputs are computational demonstrations, not medical diagnoses.
-  </div>
+  <div class="disclaimer">⚠ Research prototype only. Not clinically validated. Not for medical use.</div>
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('analyze')">⬡ Sequence Analysis</div>
-  <div class="tab" onclick="switchTab('compare')">⬡ Couple Compatibility</div>
+  <div class="tab active" onclick="switchTab('analyze')">⬡ Cancer Mutation Analysis</div>
+  <div class="tab" onclick="switchTab('compare')">⬡ Hereditary Risk · Couple Screening</div>
 </div>
 
 <main>
@@ -496,22 +201,24 @@
     <div class="grid-2">
       <div>
         <div class="card">
-          <div class="card-title">Input DNA / RNA Sequence</div>
-          <textarea id="seq-input" rows="10" placeholder="Paste your DNA or RNA sequence here...&#10;&#10;Example: ATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCTAGCT"></textarea>
-          <button class="sample-btn" onclick="loadSample('analyze')">Load Sample Sequence</button>
-          <button class="btn" onclick="runAnalysis()" id="analyze-btn">▶ ANALYZE SEQUENCE</button>
+          <div class="card-title">Input DNA Sequence</div>
+          <textarea id="seq-input" rows="10"
+            placeholder="Paste your DNA sequence here...&#10;&#10;Valid bases: A T G C U N&#10;&#10;This sequence will be analyzed for cancer-associated&#10;mutation patterns and gene family classification."
+            oninput="validateSeq('seq-input','val1')"></textarea>
+          <div class="validation-bar">
+            <div class="val-status"><div class="val-dot" id="val1-dot"></div><span class="val-msg" id="val1-msg">Awaiting input</span></div>
+            <span class="val-count" id="val1-count">0 bases</span>
+          </div>
+          <button class="sample-btn" onclick="loadSample('analyze')">Load Sample</button>
+          <button class="btn" onclick="runAnalysis()" id="analyze-btn">▶ DETECT CANCER MUTATIONS</button>
         </div>
-
         <div class="loader" id="analyze-loader">
           <div class="dna-loader">A T G C A T G C</div>
-          <div class="loader-text">Processing genomic sequence...</div>
+          <div class="loader-text">Scanning for oncogenic mutations...</div>
         </div>
       </div>
-
       <div>
-        <div class="results" id="analyze-results">
-          <!-- Filled dynamically -->
-        </div>
+        <div class="results" id="analyze-results"></div>
       </div>
     </div>
   </div>
@@ -521,27 +228,31 @@
     <div class="grid-2">
       <div>
         <div class="card">
-          <div class="card-title">Partner 1 — Sequence</div>
-          <textarea id="seq1-input" rows="7" placeholder="Enter first DNA sequence..."></textarea>
+          <div class="card-title">Partner 1 — DNA Sequence</div>
+          <textarea id="seq1-input" rows="6" placeholder="Enter first DNA sequence..." oninput="validateSeq('seq1-input','val2')"></textarea>
+          <div class="validation-bar">
+            <div class="val-status"><div class="val-dot" id="val2-dot"></div><span class="val-msg" id="val2-msg">Awaiting input</span></div>
+            <span class="val-count" id="val2-count">0 bases</span>
+          </div>
           <button class="sample-btn" onclick="loadSample('seq1')">Load Sample</button>
         </div>
-        <div class="card" style="margin-top:16px">
-          <div class="card-title">Partner 2 — Sequence</div>
-          <textarea id="seq2-input" rows="7" placeholder="Enter second DNA sequence..."></textarea>
+        <div class="card">
+          <div class="card-title">Partner 2 — DNA Sequence</div>
+          <textarea id="seq2-input" rows="6" placeholder="Enter second DNA sequence..." oninput="validateSeq('seq2-input','val3')"></textarea>
+          <div class="validation-bar">
+            <div class="val-status"><div class="val-dot" id="val3-dot"></div><span class="val-msg" id="val3-msg">Awaiting input</span></div>
+            <span class="val-count" id="val3-count">0 bases</span>
+          </div>
           <button class="sample-btn" onclick="loadSample('seq2')">Load Sample</button>
-          <button class="btn" onclick="runCompare()" id="compare-btn">⬡ ANALYZE COMPATIBILITY</button>
+          <button class="btn" onclick="runCompare()" id="compare-btn">⬡ SCREEN HEREDITARY CANCER RISK</button>
         </div>
-
         <div class="loader" id="compare-loader">
           <div class="dna-loader">A T G C A T G C</div>
-          <div class="loader-text">Comparing genomic profiles...</div>
+          <div class="loader-text">Analyzing hereditary risk profile...</div>
         </div>
       </div>
-
       <div>
-        <div class="results" id="compare-results">
-          <!-- Filled dynamically -->
-        </div>
+        <div class="results" id="compare-results"></div>
       </div>
     </div>
   </div>
@@ -549,239 +260,336 @@
 
 <script>
 const API = 'http://localhost:5000';
-
+const VALID_BASES = new Set(['A','T','G','C','U','N']);
 const SAMPLES = [
-  'ATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTATGCCAGTA',
-  'GCGCGCATCGATCGCGCGCATCGATCGCGCGCATCGATCGCGCGCATCGATCGCGCGCATCGATCGCGCGCATCGATCGC',
-  'TTAGCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATC',
-  'ATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGA',
-  'TAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT',
-  'CGTAGCTAGCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGAT',
-  'GTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTATGTAT'
+  'ATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGC',
+  'GCTAGCTATTTTTGCGATCGATCGTAGCTAGCTAGCGGGGATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCGCTAGCTATTTTTGCGATCGATCGTAGCTAGCTAGCGGGG',
+  'ATGATGCAGCAGCAGGCGCGGCGGCGGCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG'
 ];
-
 let sampleIdx = 0;
+let lastData = null, lastSeq = '';
 
-function loadSample(target) {
-  const s = SAMPLES[sampleIdx % SAMPLES.length];
-  sampleIdx++;
-  if (target === 'analyze') document.getElementById('seq-input').value = s;
-  if (target === 'seq1') document.getElementById('seq1-input').value = s;
-  if (target === 'seq2') document.getElementById('seq2-input').value = SAMPLES[(sampleIdx) % SAMPLES.length];
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i === 0 && tab==='analyze') || (i===1 && tab==='compare')));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-}
-
-function getStatusClass(status) {
-  if (!status) return 'normal';
-  const s = status.toLowerCase();
-  if (s.includes('high')) return 'high';
-  if (s.includes('moderate')) return 'moderate';
-  if (s.includes('low')) return 'low';
-  return 'normal';
-}
-
-function renderAnalysis(data) {
-  if (data.error) {
-    return `<div class="error-msg">⚠ ${data.error}</div>`;
+// ── DNA HELIX ──────────────────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('helix-canvas');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+  function resize(){ canvas.width=300; canvas.height=window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  const COLORS=['#00e5cc','#ff4466','#00ff99','#ffd700','#0099ff'];
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const cx=canvas.width/2, amp=75, freq=0.04, rungs=30;
+    for(let i=0;i<rungs;i++){
+      const y=(i/rungs)*canvas.height, phase=t+i*0.3;
+      const x1=cx+Math.sin(phase)*amp, x2=cx+Math.sin(phase+Math.PI)*amp;
+      const depth=(Math.sin(phase)+1)/2;
+      ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y);
+      ctx.strokeStyle=`rgba(0,229,204,${0.12+depth*0.2})`; ctx.lineWidth=1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x1,y,4,0,Math.PI*2);
+      ctx.fillStyle=COLORS[i%COLORS.length]; ctx.globalAlpha=0.4+depth*0.5; ctx.fill(); ctx.globalAlpha=1;
+      ctx.beginPath(); ctx.arc(x2,y,4,0,Math.PI*2);
+      ctx.fillStyle=COLORS[(i+2)%COLORS.length]; ctx.globalAlpha=0.4+(1-depth)*0.5; ctx.fill(); ctx.globalAlpha=1;
+    }
+    ctx.beginPath();
+    for(let y=0;y<canvas.height;y+=2){ const x=cx+Math.sin(t+y*freq)*amp; y===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+    ctx.strokeStyle='rgba(0,229,204,0.25)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath();
+    for(let y=0;y<canvas.height;y+=2){ const x=cx+Math.sin(t+y*freq+Math.PI)*amp; y===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+    ctx.strokeStyle='rgba(255,68,102,0.15)'; ctx.lineWidth=1.5; ctx.stroke();
+    t+=0.02; requestAnimationFrame(draw);
   }
+  draw();
+})();
 
-  const sc = getStatusClass(data.status);
-  const mutations = data.mutations_detected || [];
-  const allNormal = mutations.length === 1 && mutations[0].includes('No significant');
+// ── VALIDATION ─────────────────────────────────────────────────────────────
+function validateSeq(tid, vid){
+  const ta=document.getElementById(tid);
+  const seq=ta.value.toUpperCase().replace(/\s|\n/g,'');
+  const dot=document.getElementById(vid+'-dot'), msg=document.getElementById(vid+'-msg'), cnt=document.getElementById(vid+'-count');
+  cnt.textContent=seq.length+' bases';
+  if(!seq.length){ dot.className='val-dot'; msg.className='val-msg'; msg.textContent='Awaiting input'; ta.className=''; return; }
+  if(seq.length<10){ dot.className='val-dot err'; msg.className='val-msg err'; msg.textContent='Too short (min 10 bases)'; ta.className='invalid'; return; }
+  const inv=[...seq].filter(c=>!VALID_BASES.has(c));
+  if(inv.length){ dot.className='val-dot err'; msg.className='val-msg err'; msg.textContent=`Invalid: ${[...new Set(inv)].join(', ')}`; ta.className='invalid'; return; }
+  dot.className='val-dot ok'; msg.className='val-msg ok'; msg.textContent='Valid sequence ✓'; ta.className='valid';
+}
 
-  const baseComp = Object.entries(data.base_composition || {})
-    .map(([b,p]) => `<span class="base-pill">${b}: ${p}%</span>`).join('');
+function loadSample(t){
+  const s=SAMPLES[sampleIdx%SAMPLES.length]; sampleIdx++;
+  if(t==='analyze'){ document.getElementById('seq-input').value=s; validateSeq('seq-input','val1'); }
+  if(t==='seq1'){ document.getElementById('seq1-input').value=s; validateSeq('seq1-input','val2'); }
+  if(t==='seq2'){ document.getElementById('seq2-input').value=SAMPLES[sampleIdx%SAMPLES.length]; validateSeq('seq2-input','val3'); }
+}
 
-  const mutList = mutations.map(m => {
-    const isOk = m.includes('No significant');
-    return `<li class="${isOk ? 'ok' : 'warn'}">${m}</li>`;
-  }).join('');
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='analyze')||(i===1&&tab==='compare')));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function getStatusClass(s){
+  if(!s) return 'low';
+  const sl=s.toLowerCase();
+  if(sl.includes('critical')) return 'critical';
+  if(sl.includes('high')) return 'high';
+  if(sl.includes('moderate')) return 'moderate';
+  return 'low';
+}
+
+function riskColor(sc){
+  return sc==='critical'?'var(--critical)':sc==='high'?'var(--orange)':sc==='moderate'?'var(--yellow)':'var(--green)';
+}
+
+// ── RENDER ANALYSIS ─────────────────────────────────────────────────────────
+function renderAnalysis(data){
+  if(data.error) return `<div class="error-msg">⚠ ${data.error}</div>`;
+
+  const sc=getStatusClass(data.status);
+  const rc=riskColor(sc);
+
+  // Cancer alert
+  const cancerHtml = data.cancer_associated
+    ? `<div class="cancer-alert positive">
+        <div class="cancer-alert-title">⚠ CANCER-ASSOCIATED GENE FAMILY DETECTED</div>
+        <div style="margin-bottom:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim)">${data.cancer_detail}</div>
+        <div>${(data.associated_cancers||[]).map(c=>`<span class="cancer-tag">${c}</span>`).join('')}</div>
+        ${data.drug_targets&&data.drug_targets.length?`<div style="margin-top:10px;font-size:9px;letter-spacing:2px;color:var(--text-dim);font-family:'Orbitron',monospace;margin-bottom:4px">KNOWN DRUG TARGETS</div><div>${data.drug_targets.map(d=>`<span class="drug-tag">${d}</span>`).join('')}</div>`:''}
+      </div>`
+    : `<div class="cancer-alert negative">
+        <div class="cancer-alert-title">✓ NO DIRECT CANCER GENE FAMILY ASSOCIATION</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim)">This gene family is not a primary cancer driver. Check mutation flags below for additional signals.</div>
+      </div>`;
+
+  // Mutation flags
+  const mutHtml = data.mutation_flags&&data.mutation_flags.length
+    ? data.mutation_flags.map(f=>`
+        <div class="mut-flag ${f.severity}">
+          <div class="mut-flag-title">${f.severity.toUpperCase()} · ${f.type}</div>
+          <div class="mut-flag-detail">${f.detail}</div>
+        </div>`).join('')
+    : `<div class="no-flag">✓ No cancer mutation patterns detected in this sequence.</div>`;
+
+  const baseComp=Object.entries(data.base_composition||{}).map(([b,p])=>`<span class="base-pill">${b}: ${p}%</span>`).join('');
 
   return `
     <div class="status-banner ${sc}">
       <div>
-        <div style="font-size:11px;letter-spacing:2px;color:var(--text-dim);margin-bottom:4px">GENOMIC STATUS</div>
-        <div class="status-label">${data.status || 'Unknown'}</div>
+        <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);margin-bottom:3px">ONCOGENIC RISK STATUS</div>
+        <div class="status-label">${data.status}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:4px;font-family:'Share Tech Mono',monospace">${data.carrier_status}</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:11px;letter-spacing:2px;color:var(--text-dim);margin-bottom:4px">RISK SCORE</div>
-        <div class="risk-score" style="color:${sc==='high'?'var(--red)':sc==='moderate'?'var(--orange)':sc==='low'?'var(--yellow)':'var(--green)'}">${data.risk_score}</div>
+        <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);margin-bottom:3px">RISK SCORE</div>
+        <div class="risk-score" style="color:${rc}">${data.risk_score}</div>
+        <div style="font-size:9px;color:var(--text-dim)">/100</div>
       </div>
     </div>
+
+    ${cancerHtml}
 
     <div class="metrics-grid">
-      <div class="metric">
-        <div class="metric-value">${data.sequence_length || 0}</div>
-        <div class="metric-label">Bases</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value">${data.gc_content || 0}%</div>
-        <div class="metric-label">GC Content</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value">${data.confidence || 0}%</div>
-        <div class="metric-label">Confidence</div>
-      </div>
+      <div class="metric"><div class="metric-value">${data.sequence_length}</div><div class="metric-label">Bases</div></div>
+      <div class="metric"><div class="metric-value">${data.gc_content}%</div><div class="metric-label">GC Content</div></div>
+      <div class="metric"><div class="metric-value">${data.confidence}%</div><div class="metric-label">AI Confidence</div></div>
     </div>
 
     <div class="info-row">
-      <div class="info-label">Predicted Gene Family</div>
-      <div class="info-value">${data.predicted_gene_family || 'Unknown'}</div>
+      <div class="info-label">Classified Gene Family</div>
+      <div class="info-value">${data.predicted_gene_family}</div>
     </div>
 
     <div class="info-row">
-      <div class="info-label">Disorder Flag</div>
-      <div class="info-value" style="color:${sc==='normal'?'var(--green)':'var(--orange)'}">${data.disorder_flag || '—'}</div>
+      <div class="info-label">Oncogene / Tumor Suppressor</div>
+      <div class="info-value" style="color:${data.oncogene?'var(--red)':'var(--green)'}">${data.oncogene?'⚠ Oncogene — promotes uncontrolled cell growth':'✓ Not classified as a primary oncogene'}</div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-label">Cancer Mutation Flags</div>
+      <div style="margin-top:8px">${mutHtml}</div>
     </div>
 
     <div class="info-row">
       <div class="info-label">Base Composition</div>
-      <div class="base-comp">${baseComp}</div>
+      <div class="base-comp" style="margin-top:6px">${baseComp}</div>
     </div>
 
-    <div class="info-row">
-      <div class="info-label">Mutation / Variation Patterns</div>
-      <ul class="mutation-list">${mutList}</ul>
-    </div>
+    <button class="btn-pdf" onclick="downloadPDF()">⬇ Download Oncology Report (PDF)</button>
   `;
 }
 
-function renderCompare(data) {
-  if (data.error) {
-    return `<div class="error-msg">⚠ ${data.error}</div>`;
-  }
+// ── RENDER COMPARE ──────────────────────────────────────────────────────────
+function renderCompare(data){
+  if(data.error) return `<div class="error-msg">⚠ ${data.error}</div>`;
+  const score=data.compatibility_score||0;
+  const sc=score>70?'low':score>40?'moderate':'high';
+  const rc=riskColor(sc);
+  const barColor=score>70?'linear-gradient(90deg,var(--teal),var(--green))':score>40?'linear-gradient(90deg,var(--orange),var(--yellow))':'linear-gradient(90deg,var(--critical),var(--red))';
 
-  const score = data.compatibility_score || 0;
-  const barColor = score > 70 ? 'linear-gradient(90deg,var(--teal),var(--green))' : score > 40 ? 'linear-gradient(90deg,var(--orange),var(--yellow))' : 'linear-gradient(90deg,var(--red),var(--orange))';
+  const carrierBadge=(c)=>{
+    const isHigh=c&&(c.includes('High')||c.includes('Carrier'));
+    return `<span class="carrier-badge ${isHigh?'high':'low'}">${c||'Unknown'}</span>`;
+  };
+
+  const cancerList=(arr)=> arr&&arr.length ? arr.map(c=>`<span class="cancer-tag">${c}</span>`).join('') : '<span style="color:var(--green);font-family:Share Tech Mono,monospace;font-size:11px">None detected</span>';
 
   return `
-    <div class="status-banner ${score > 70 ? 'normal' : score > 40 ? 'moderate' : 'high'}">
+    <div class="status-banner ${sc}">
       <div>
-        <div style="font-size:11px;letter-spacing:2px;color:var(--text-dim);margin-bottom:4px">COMPATIBILITY</div>
-        <div class="status-label" style="font-size:14px">${score > 70 ? 'COMPATIBLE' : score > 40 ? 'CAUTION' : 'HIGH RISK'}</div>
+        <div style="font-size:9px;letter-spacing:2px;color:var(--text-dim);margin-bottom:3px">HEREDITARY CANCER RISK</div>
+        <div class="status-label">${score>70?'LOW RISK':score>40?'MODERATE RISK':'HIGH RISK'}</div>
       </div>
       <div style="text-align:right">
-        <div class="risk-score" style="color:${score > 70 ? 'var(--green)' : score > 40 ? 'var(--orange)' : 'var(--red)'}">${score}</div>
-        <div style="font-size:10px;color:var(--text-dim)">/100</div>
+        <div class="risk-score" style="color:${rc}">${score}</div>
+        <div style="font-size:9px;color:var(--text-dim)">/100</div>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:16px">
+    <div class="card">
       <div class="card-title">Genomic Similarity</div>
-      <div style="font-family:'Share Tech Mono';font-size:28px;color:var(--teal)">${data.kmer_similarity}%</div>
-      <div class="compat-bar-wrap">
-        <div class="compat-bar" style="width:${data.kmer_similarity}%;background:${barColor}"></div>
-      </div>
-      <div style="font-size:11px;color:var(--text-dim)">${data.shared_kmers} shared k-mer motifs detected</div>
-    </div>
-
-    <div class="metrics-grid">
-      <div class="metric">
-        <div class="metric-value" style="font-size:14px">${data.sequence_1_status || '—'}</div>
-        <div class="metric-label">Partner 1</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value" style="font-size:14px">${data.sequence_2_status || '—'}</div>
-        <div class="metric-label">Partner 2</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value">${data.combined_risk_score || 0}</div>
-        <div class="metric-label">Combined Risk</div>
-      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:26px;color:var(--teal)">${data.kmer_similarity}%</div>
+      <div class="compat-bar-wrap"><div class="compat-bar" style="width:${data.kmer_similarity}%;background:${barColor}"></div></div>
+      <div style="font-size:10px;color:var(--text-dim)">${data.shared_kmers} shared k-mer motifs</div>
     </div>
 
     <div class="info-row">
-      <div class="info-label">Partner 1 Gene Family</div>
-      <div class="info-value">${data.sequence_1_gene_family || '—'}</div>
+      <div class="info-label">Partner 1</div>
+      <div class="info-value">${data.partner1_gene_family} · ${data.partner1_status}</div>
+      <div style="margin-top:6px">${carrierBadge(data.partner1_carrier)}</div>
+      <div style="margin-top:8px">${cancerList(data.partner1_cancers)}</div>
     </div>
 
     <div class="info-row">
-      <div class="info-label">Partner 2 Gene Family</div>
-      <div class="info-value">${data.sequence_2_gene_family || '—'}</div>
+      <div class="info-label">Partner 2</div>
+      <div class="info-value">${data.partner2_gene_family} · ${data.partner2_status}</div>
+      <div style="margin-top:6px">${carrierBadge(data.partner2_carrier)}</div>
+      <div style="margin-top:8px">${cancerList(data.partner2_cancers)}</div>
     </div>
 
-    <div class="info-row" style="border-color:${score > 70 ? 'rgba(0,255,153,0.3)' : 'rgba(255,68,102,0.3)'}">
-      <div class="info-label">Compatibility Assessment</div>
-      <div class="info-value" style="color:${score > 70 ? 'var(--green)' : score > 40 ? 'var(--orange)' : 'var(--red)'}">${data.compatibility_result || '—'}</div>
+    <div class="info-row" style="border-color:${score>70?'rgba(0,255,153,0.3)':'rgba(255,68,102,0.3)'}">
+      <div class="info-label">Offspring Hereditary Cancer Risk</div>
+      <div class="info-value" style="color:${rc};margin-top:4px">${data.offspring_cancer_risk}</div>
     </div>
 
     <div class="info-row">
-      <div class="info-label">Recommendation</div>
-      <div class="info-value" style="color:var(--text-dim)">${data.recommendation || '—'}</div>
+      <div class="info-label">Clinical Recommendation</div>
+      <div class="info-value" style="color:var(--text-dim)">${data.recommendation}</div>
+    </div>
+
+    <div class="metric" style="margin-top:10px">
+      <div class="metric-value">${data.combined_risk_score}</div>
+      <div class="metric-label">Combined Risk Score</div>
     </div>
   `;
 }
 
-async function runAnalysis() {
-  const seq = document.getElementById('seq-input').value.trim();
-  if (!seq) { alert('Please enter a sequence.'); return; }
+// ── PDF EXPORT ──────────────────────────────────────────────────────────────
+function downloadPDF(){
+  if(!lastData) return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const d=lastData, now=new Date().toLocaleString();
 
-  const btn = document.getElementById('analyze-btn');
-  const loader = document.getElementById('analyze-loader');
-  const results = document.getElementById('analyze-results');
+  doc.setFillColor(5,13,18); doc.rect(0,0,210,42,'F');
+  doc.setTextColor(0,229,204); doc.setFontSize(20); doc.setFont('helvetica','bold');
+  doc.text('MITAI — Oncology Report',14,16);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('Cancer Mutation Detection · Genomic AI Platform',14,24);
+  doc.setTextColor(90,144,144); doc.setFontSize(7);
+  doc.text(`Generated: ${now}  |  Research Prototype — NOT for clinical use`,14,32);
+  doc.text(`Sequence: ${lastSeq.substring(0,80)}${lastSeq.length>80?'...':''}`,14,38);
 
-  btn.disabled = true;
-  loader.classList.add('show');
-  results.classList.remove('show');
+  doc.setFillColor(13,32,48); doc.rect(14,46,182,24,'F');
+  doc.setTextColor(0,229,204); doc.setFontSize(12); doc.setFont('helvetica','bold');
+  doc.text(`Status: ${d.status}`,20,55);
+  doc.setTextColor(200,240,238); doc.setFontSize(10);
+  doc.text(`Risk Score: ${d.risk_score}/100  |  Carrier: ${d.carrier_status}`,20,64);
 
-  try {
-    const res = await fetch(`${API}/analyze`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({sequence: seq})
-    });
-    const data = await res.json();
-    results.innerHTML = renderAnalysis(data);
-    results.classList.add('show');
-  } catch(e) {
-    results.innerHTML = `<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
-    results.classList.add('show');
-  } finally {
-    btn.disabled = false;
-    loader.classList.remove('show');
+  let y=78;
+  function section(title,lines){
+    if(y>260){ doc.addPage(); y=20; }
+    doc.setFillColor(10,26,34); doc.rect(14,y-5,182,8+lines.length*7,'F');
+    doc.setTextColor(0,229,204); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text(title.toUpperCase(),18,y); y+=6;
+    doc.setTextColor(200,240,238); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    lines.forEach(l=>{ doc.text(String(l).substring(0,90),20,y); y+=7; }); y+=6;
   }
+
+  section('Gene Classification',[
+    `Gene Family: ${d.predicted_gene_family}`,
+    `Cancer Associated: ${d.cancer_associated?'YES':'NO'}`,
+    `Oncogene: ${d.oncogene?'YES':'NO'}`,
+    `AI Confidence: ${d.confidence}%`
+  ]);
+
+  if(d.associated_cancers&&d.associated_cancers.length){
+    section('Associated Cancer Types', d.associated_cancers);
+  }
+
+  if(d.drug_targets&&d.drug_targets.length){
+    section('Known Drug Targets', d.drug_targets);
+  }
+
+  section('Cancer Detail',[d.cancer_detail||'N/A']);
+
+  section('Sequence Metrics',[
+    `Length: ${d.sequence_length} bases`,
+    `GC Content: ${d.gc_content}%`,
+    `K-mers Analyzed: ${d.kmers_analyzed}`
+  ]);
+
+  if(d.mutation_flags&&d.mutation_flags.length){
+    section('Cancer Mutation Flags', d.mutation_flags.map(f=>`[${f.severity}] ${f.type}: ${f.detail.substring(0,70)}`));
+  } else {
+    section('Cancer Mutation Flags',['No significant mutation patterns detected']);
+  }
+
+  section('Base Composition', Object.entries(d.base_composition||{}).map(([b,p])=>`${b}: ${p}%`));
+  section('Top Codon Frequencies', (d.top_codons||[]).map(c=>`${c.codon}: ${c.frequency}% (${c.count}x)`));
+  section('Gene Family Confidence', (d.all_confidences||[]).map(c=>`${c.family}: ${c.confidence}%`));
+
+  doc.setTextColor(90,144,144); doc.setFontSize(6);
+  doc.text('⚠ This report is a computational proof-of-concept. Not clinically validated. Consult an oncologist or genetic counselor.',14,285);
+
+  doc.save(`MITAI_Oncology_Report_${Date.now()}.pdf`);
 }
 
-async function runCompare() {
-  const seq1 = document.getElementById('seq1-input').value.trim();
-  const seq2 = document.getElementById('seq2-input').value.trim();
-  if (!seq1 || !seq2) { alert('Please enter both sequences.'); return; }
-
-  const btn = document.getElementById('compare-btn');
-  const loader = document.getElementById('compare-loader');
-  const results = document.getElementById('compare-results');
-
-  btn.disabled = true;
-  loader.classList.add('show');
-  results.classList.remove('show');
-
-  try {
-    const res = await fetch(`${API}/compare`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({sequence1: seq1, sequence2: seq2})
-    });
-    const data = await res.json();
-    results.innerHTML = renderCompare(data);
+// ── API CALLS ────────────────────────────────────────────────────────────────
+async function runAnalysis(){
+  const seq=document.getElementById('seq-input').value.trim();
+  if(!seq){ alert('Please enter a sequence.'); return; }
+  const btn=document.getElementById('analyze-btn'), loader=document.getElementById('analyze-loader'), results=document.getElementById('analyze-results');
+  btn.disabled=true; loader.classList.add('show'); results.classList.remove('show');
+  try{
+    const res=await fetch(`${API}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequence:seq})});
+    const data=await res.json();
+    lastData=data; lastSeq=seq.toUpperCase().replace(/\s/g,'');
+    results.innerHTML=renderAnalysis(data); results.classList.add('show');
+  }catch(e){
+    results.innerHTML=`<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
     results.classList.add('show');
-  } catch(e) {
-    results.innerHTML = `<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
-    results.classList.add('show');
-  } finally {
-    btn.disabled = false;
-    loader.classList.remove('show');
-  }
+  }finally{ btn.disabled=false; loader.classList.remove('show'); }
 }
 
-// Allow Enter key submission
-document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.key === 'Enter') {
-    if (document.getElementById('panel-analyze').classList.contains('active')) runAnalysis();
+async function runCompare(){
+  const seq1=document.getElementById('seq1-input').value.trim();
+  const seq2=document.getElementById('seq2-input').value.trim();
+  if(!seq1||!seq2){ alert('Please enter both sequences.'); return; }
+  const btn=document.getElementById('compare-btn'), loader=document.getElementById('compare-loader'), results=document.getElementById('compare-results');
+  btn.disabled=true; loader.classList.add('show'); results.classList.remove('show');
+  try{
+    const res=await fetch(`${API}/compare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequence1:seq1,sequence2:seq2})});
+    const data=await res.json();
+    results.innerHTML=renderCompare(data); results.classList.add('show');
+  }catch(e){
+    results.innerHTML=`<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
+    results.classList.add('show');
+  }finally{ btn.disabled=false; loader.classList.remove('show'); }
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.key==='Enter'){
+    if(document.getElementById('panel-analyze').classList.contains('active')) runAnalysis();
     else runCompare();
   }
 });

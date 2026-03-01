@@ -6,7 +6,6 @@ from model import analyze_sequence, compare_sequences, load_trained_model
 app = Flask(__name__, static_folder='.')
 CORS(app)
 
-# Pre-load model on startup
 print("Loading model...")
 try:
     load_trained_model()
