@@ -152,12 +152,12 @@ Tyrosine kinase mutations are among the **most well-documented cancer drivers** 
 | Freenome | Blood-based cancer detection | Proprietary, high cost |
 | DELFI Diagnostics | DNA fragment analysis | Complex setup |
 | Guardant Health | Liquid biopsy | FDA process, costly |
-| **MITAI** | Nanopore + open-source AI | **Affordable, accessible, portable** |
+| **MITAI** |**Nanopore + open-source AI** | **Affordable, accessible, portable** |
 
 ---
 
 ## 👥 Team
-
+Made for TNWISE Hackathon 
 
 
 ---
