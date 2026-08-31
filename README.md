@@ -84,31 +84,31 @@ In this prototype, the Nanopore sequencing step is simulated using a pre-existin
 
 ## How to Run
 
-**1. Clone the repo**
-```bash
+1. Clone the repo
+
 git clone https://github.com/StephClar/MITAI-prototype.git
 cd MITAI-prototype
-```
 
-**2. Install dependencies**
-```bash
-pip install flask flask-cors scikit-learn pandas numpy
-```
+2. Create a virtual environment
 
-**3. Train the model** (one time only, ~2 minutes)
-```bash
+python3 -m venv venv
+source venv/bin/activate
+
+3. Install dependencies
+
+pip install -r requirements.txt
+
+4. Train the model
+
 python model.py
-```
 
-**4. Start the server**
-```bash
+5. Start the server
+
 python app.py
-```
 
-**5. Open the app**
+6. Open the app
 
-Double-click `index.html` or open it in your browser.
-
+Open http://127.0.0.1:5000 in your browser.
 ---
 
 ## 📁 Project Structure
@@ -122,7 +122,8 @@ MITAI-prototype/
 │   └── example_dna.fa     # FASTA example
 ├── model.py               # ML pipeline, cancer mutation detection logic
 ├── app.py                 # Flask API server
-├── index.html             # Frontend UI
+├── index.html.            # Frontend UI
+├──requirements.txt
 └── README.md
 ```
 
