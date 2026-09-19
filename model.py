@@ -112,30 +112,78 @@ def load_data():
 
 def train_model():
     from sklearn.feature_extraction.text import CountVectorizer
+
     print("Loading data...")
+
     data = load_data()
+
     data['kmer'] = data['sequence'].apply(kmers_to_string)
+
     X = data['kmer']
     y = data['class']
+
     print(f"Dataset size: {len(data)} sequences")
-    vectorizer = CountVectorizer(ngram_range=(4,4), analyzer='word')
+
+    vectorizer = CountVectorizer(
+        ngram_range=(4, 4),
+        analyzer='word'
+    )
+
     X_vec = vectorizer.fit_transform(X)
-    X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, random_state=42)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_vec,
+        y,
+        test_size=0.2,
+        random_state=42
+    )
+
     print("Training Random Forest classifier...")
-    clf = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+
+    clf = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42,
+        n_jobs=-1
+    )
+
     clf.fit(X_train, y_train)
-    acc = accuracy_score(y_test, clf.predict(X_test))
-    print(f"Model Accuracy: {acc*100:.2f}%")
-    with open('model.pkl', 'wb') as f:
-        pickle.dump({'clf': clf, 'vectorizer': vectorizer, 'accuracy': acc}, f)
+
+    acc = accuracy_score(
+        y_test,
+        clf.predict(X_test)
+    )
+
+    print(f"Model Accuracy: {acc * 100:.2f}%")
+
+    # Save model relative to this file
+    base = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(base, 'model.pkl')
+
+    with open(model_path, 'wb') as f:
+        pickle.dump(
+            {
+                'clf': clf,
+                'vectorizer': vectorizer,
+                'accuracy': acc
+            },
+            f
+        )
+
     print("Model saved to model.pkl")
+
     return clf, vectorizer, acc
 
+
 def load_trained_model():
-    if not os.path.exists('model.pkl'):
+    base = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(base, 'model.pkl')
+
+    if not os.path.exists(model_path):
         return train_model()
-    with open('model.pkl', 'rb') as f:
+
+    with open(model_path, 'rb') as f:
         data = pickle.load(f)
+
     return data['clf'], data['vectorizer'], data['accuracy']
 
 def detect_cancer_mutations(sequence, gc_content):
