@@ -174,17 +174,33 @@ def train_model():
     return clf, vectorizer, acc
 
 
+_MODEL_CACHE = None
+
 def load_trained_model():
+    """Load the model once and keep it in memory (previously it was re-loaded,
+    or even re-trained, on every single request)."""
+    global _MODEL_CACHE
+    if _MODEL_CACHE is not None:
+        return _MODEL_CACHE
+
     base = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(base, 'model.pkl')
 
     if not os.path.exists(model_path):
-        return train_model()
+        _MODEL_CACHE = train_model()
+        return _MODEL_CACHE
 
     with open(model_path, 'rb') as f:
         data = pickle.load(f)
 
-    return data['clf'], data['vectorizer'], data['accuracy']
+    _MODEL_CACHE = (data['clf'], data['vectorizer'], data['accuracy'])
+    return _MODEL_CACHE
+
+
+def clean_sequence(raw):
+    """Remove FASTA header lines (starting with '>') and all whitespace."""
+    lines = [l for l in raw.splitlines() if not l.strip().startswith('>')]
+    return ''.join(''.join(lines).split()).upper()
 
 def detect_cancer_mutations(sequence, gc_content):
     """Detect cancer-specific mutation patterns from sequence."""
@@ -251,12 +267,15 @@ def detect_cancer_mutations(sequence, gc_content):
 def analyze_sequence(sequence):
     """Full cancer-focused analysis of a DNA sequence."""
     clf, vectorizer, acc = load_trained_model()
-    sequence = sequence.upper().replace(' ', '').replace('\n', '')
+    sequence = clean_sequence(sequence)
     valid_bases = set('ATGCUN')
     invalid = [c for c in sequence if c not in valid_bases]
 
     if len(sequence) < 10:
         return {"error": "Sequence too short. Please enter at least 10 bases."}
+
+    if len(invalid) > 0.1 * len(sequence):
+        return {"error": "This doesn't look like a DNA sequence. Use only A, T, G, C (and N)."}
 
     # K-mer classification
     kmers = get_kmers(sequence)
@@ -336,8 +355,8 @@ def analyze_sequence(sequence):
 
 def compare_sequences(seq1, seq2):
     """Cancer carrier compatibility between two sequences."""
-    seq1 = seq1.upper().replace(' ', '').replace('\n', '')
-    seq2 = seq2.upper().replace(' ', '').replace('\n', '')
+    seq1 = clean_sequence(seq1)
+    seq2 = clean_sequence(seq2)
 
     if len(seq1) < 10 or len(seq2) < 10:
         return {"error": "Both sequences must be at least 10 bases long."}
@@ -351,6 +370,9 @@ def compare_sequences(seq1, seq2):
 
     r1 = analyze_sequence(seq1)
     r2 = analyze_sequence(seq2)
+    for label, r in (("Partner 1", r1), ("Partner 2", r2)):
+        if r.get('error'):
+            return {"error": f"{label}: {r['error']}"}
 
     both_cancer = r1.get('cancer_associated') and r2.get('cancer_associated')
     same_family = r1.get('gene_family_id') == r2.get('gene_family_id')

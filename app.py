@@ -10,10 +10,12 @@ CORS(app)
 # Load the trained model when the application starts
 print("Loading model...")
 
+MODEL_ERROR = None
 try:
     load_trained_model()
     print("Model ready!")
 except Exception as e:
+    MODEL_ERROR = str(e)
     print(f"Model could not be loaded: {e}")
 
 
@@ -64,10 +66,12 @@ def compare():
 @app.route('/health')
 def health():
     return jsonify({
-        "status": "ok",
-        "model": "loaded"
+        "status": "ok" if MODEL_ERROR is None else "error",
+        "model": "loaded" if MODEL_ERROR is None else MODEL_ERROR
     })
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Hosting services (Render etc.) pass the port in the PORT variable
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=os.environ.get('PORT') is None)

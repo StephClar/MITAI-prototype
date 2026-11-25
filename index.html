@@ -259,7 +259,25 @@
 </main>
 
 <script>
-const API = '';
+// Where the Python (Flask) server lives.
+// - When you run `python app.py` and open http://127.0.0.1:5000, leave it as '' (same server).
+// - For the Vercel site, paste your Render URL below, e.g. 'https://mitai-backend.onrender.com'
+const BACKEND_URL = '';
+const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+const API = IS_LOCAL ? '' : BACKEND_URL;
+
+async function callApi(path, body){
+  let res;
+  try{
+    res = await fetch(`${API}${path}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  }catch(e){
+    throw new Error('Cannot reach the MITAI server. If it is hosted on Render free tier it may be waking up — wait ~1 minute and try again.');
+  }
+  let data;
+  try{ data = await res.json(); }
+  catch(e){ throw new Error(`Server replied with HTTP ${res.status} (not JSON). Check that BACKEND_URL in index.html points to the Flask server.`); }
+  return data;
+}
 const VALID_BASES = new Set(['A','T','G','C','U','N']);
 const SAMPLES = [
   'ATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGCATGCGATCGATCGATCGTAGCTAGCTAGCTAGCTAGCTAGC',
@@ -561,12 +579,11 @@ async function runAnalysis(){
   const btn=document.getElementById('analyze-btn'), loader=document.getElementById('analyze-loader'), results=document.getElementById('analyze-results');
   btn.disabled=true; loader.classList.add('show'); results.classList.remove('show');
   try{
-    const res=await fetch(`${API}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequence:seq})});
-    const data=await res.json();
+    const data=await callApi('/analyze',{sequence:seq});
     lastData=data; lastSeq=seq.toUpperCase().replace(/\s/g,'');
     results.innerHTML=renderAnalysis(data); results.classList.add('show');
   }catch(e){
-    results.innerHTML=`<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
+    results.innerHTML=`<div class="error-msg">⚠ ${e.message}</div>`;
     results.classList.add('show');
   }finally{ btn.disabled=false; loader.classList.remove('show'); }
 }
@@ -578,11 +595,10 @@ async function runCompare(){
   const btn=document.getElementById('compare-btn'), loader=document.getElementById('compare-loader'), results=document.getElementById('compare-results');
   btn.disabled=true; loader.classList.add('show'); results.classList.remove('show');
   try{
-    const res=await fetch(`${API}/compare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sequence1:seq1,sequence2:seq2})});
-    const data=await res.json();
+    const data=await callApi('/compare',{sequence1:seq1,sequence2:seq2});
     results.innerHTML=renderCompare(data); results.classList.add('show');
   }catch(e){
-    results.innerHTML=`<div class="error-msg">⚠ Cannot connect to server. Make sure Flask is running on port 5000.<br><br>${e.message}</div>`;
+    results.innerHTML=`<div class="error-msg">⚠ ${e.message}</div>`;
     results.classList.add('show');
   }finally{ btn.disabled=false; loader.classList.remove('show'); }
 }
