@@ -24,6 +24,12 @@ def index():
     return send_from_directory('.', 'index.html')
 
 
+@app.route('/metrics.json')
+def metrics():
+    # Produced by evaluate.py; shown in the "Model Evaluation" tab
+    return send_from_directory('.', 'metrics.json')
+
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     data = request.get_json()

@@ -283,6 +283,28 @@ def analyze_sequence(sequence):
     X = vectorizer.transform([kmer_str])
     pred_class = int(clf.predict(X)[0])
     proba = clf.predict_proba(X)[0]
+
+    # ── Pipeline trace: what the AI actually saw and did (shown in the UI) ──
+    n_phrases = max(0, len(kmers) - 3)              # each feature = 4 consecutive k-mers
+    known_features = int(X.nnz)                     # distinct phrases the model has seen in training
+    Xf = X.astype('float32')
+    tree_votes = Counter(
+        int(clf.classes_[int(t.predict(Xf)[0])]) for t in clf.estimators_
+    )
+    pipeline = {
+        "kmer_size": 6,
+        "kmer_count": len(kmers),
+        "first_kmers": kmers[:4],
+        "phrase_count": n_phrases,
+        "first_phrase": ' '.join(kmers[:4]) if len(kmers) >= 4 else '',
+        "known_features": known_features,
+        "vocabulary_size": len(vectorizer.vocabulary_),
+        "n_trees": len(clf.estimators_),
+        "tree_votes": [
+            {"family": GENE_FAMILIES.get(int(c), f"Family {c}"), "votes": tree_votes.get(int(c), 0)}
+            for c in clf.classes_
+        ],
+    }
     confidence = float(max(proba) * 100)
 
     # All confidences
@@ -312,7 +334,14 @@ def analyze_sequence(sequence):
     severity_scores = {"Critical": 40, "High": 25, "Moderate": 15, "Low": 5}
     mutation_score = sum(severity_scores.get(f["severity"], 0) for f in mutation_flags)
     base_risk = (1 - max(proba)) * 40
-    risk_score = min(100, int(base_risk + mutation_score + (20 if cancer_info["cancer_associated"] else 0)))
+    family_bonus = 20 if cancer_info["cancer_associated"] else 0
+    risk_score = min(100, int(base_risk + mutation_score + family_bonus))
+    pipeline["score_parts"] = {
+        "uncertainty": round(base_risk, 1),
+        "flags": mutation_score,
+        "family": family_bonus,
+        "total_before_cap": round(base_risk + mutation_score + family_bonus, 1),
+    }
 
     # Status
     if risk_score >= 75:
@@ -350,7 +379,8 @@ def analyze_sequence(sequence):
         "mutation_flags": mutation_flags if mutation_flags else [],
         "base_composition": {k: round(v/total*100, 2) for k, v in base_count.items()},
         "kmers_analyzed": len(kmers),
-        "top_codons": top_codons
+        "top_codons": top_codons,
+        "pipeline": pipeline
     }
 
 def compare_sequences(seq1, seq2):

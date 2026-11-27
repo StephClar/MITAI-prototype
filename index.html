@@ -166,10 +166,63 @@
   .base-pill { background:var(--panel2); border:1px solid var(--border); border-radius:20px; padding:3px 12px; font-family:'Share Tech Mono',monospace; font-size:11px; }
   .no-flag { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--green); padding:8px 0; }
 
+  /* Model evaluation */
+  .eval-intro { font-size:13px; color:var(--text); line-height:1.6; margin-bottom:14px; }
+  .eval-intro b { color:var(--teal); font-weight:600; }
+  .metric.honest { border-color:var(--teal); background:rgba(0,229,204,0.06); }
+  .metric-sub { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); margin-top:4px; }
+  .eval-table { width:100%; border-collapse:collapse; font-family:'Share Tech Mono',monospace; font-size:11px; }
+  .eval-table th { text-align:right; color:var(--text-dim); font-weight:400; font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .eval-table th:first-child, .eval-table td:first-child { text-align:left; }
+  .eval-table td { text-align:right; padding:7px 8px; border-bottom:1px solid rgba(15,61,74,0.5); }
+  .eval-table td.weak { color:var(--orange); }
+  .cm-wrap { overflow-x:auto; }
+  .cm { border-collapse:collapse; font-family:'Share Tech Mono',monospace; font-size:10px; margin-top:6px; }
+  .cm th { color:var(--text-dim); font-weight:400; padding:4px 6px; white-space:nowrap; }
+  .cm th.row { text-align:right; }
+  .cm td { width:46px; height:30px; text-align:center; border:1px solid var(--dark); color:var(--text); }
+  .cm-note { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:8px; line-height:1.5; }
+
+  /* AI pipeline trace + About the AI */
+  .trace { margin-bottom:14px; }
+  .trace-step { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid rgba(15,61,74,0.6); }
+  .trace-step:last-child { border-bottom:none; }
+  .trace-num { flex-shrink:0; width:24px; height:24px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Orbitron',monospace; font-size:10px; color:var(--text-dim); }
+  .trace-step.ai .trace-num { border-color:var(--teal); color:var(--teal); background:rgba(0,229,204,0.08); }
+  .trace-body { flex:1; min-width:0; }
+  .trace-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; color:var(--text); margin-bottom:4px; }
+  .trace-tag { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:9px; padding:1px 6px; border-radius:3px; margin-left:6px; vertical-align:1px; letter-spacing:1px; }
+  .trace-tag.ai { color:var(--teal); border:1px solid rgba(0,229,204,0.5); }
+  .trace-tag.rule { color:var(--text-dim); border:1px solid var(--border); }
+  .trace-text { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); line-height:1.6; }
+  .trace-text b { color:var(--text); font-weight:400; }
+  .trace-code { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--teal); background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:6px 8px; margin-top:6px; overflow-x:auto; white-space:nowrap; }
+  .vote-row { display:flex; align-items:center; gap:8px; margin-top:5px; }
+  .vote-label { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); width:170px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .vote-label.win { color:var(--teal); }
+  .vote-track { flex:1; display:flex; gap:1px; }
+  .vote-tick { flex:1; height:8px; background:var(--panel); border-radius:1px; }
+  .vote-tick.on { background:var(--teal); opacity:0.55; }
+  .vote-tick.on.win { opacity:1; }
+  .vote-n { font-family:'Orbitron',monospace; font-size:10px; color:var(--teal); width:28px; text-align:right; }
+  .about-p { font-size:13px; line-height:1.7; color:var(--text); margin-bottom:10px; }
+  .about-p b { color:var(--teal); font-weight:600; }
+  .about-list { margin:4px 0 0 18px; font-size:13px; line-height:1.8; color:var(--text); }
+  .about-list b { color:var(--teal); font-weight:600; }
+  .flow { display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; margin:6px 0 4px; }
+  .flow-box { flex:1; min-width:120px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px; }
+  .flow-box.ai { border-color:var(--teal); background:rgba(0,229,204,0.06); }
+  .flow-box .t { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; color:var(--text); }
+  .flow-box .d { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:4px; line-height:1.5; }
+  .flow-arrow { align-self:center; color:var(--text-dim); font-size:14px; }
+
   @media(max-width:768px) {
     header,.tabs,main{padding-left:20px;padding-right:20px}
     .grid-2,.metrics-grid{grid-template-columns:1fr}
     #helix-canvas{display:none}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tab{white-space:nowrap;padding:14px 16px;flex-shrink:0}
+    .vote-label{width:120px}
   }
 </style>
 </head>
@@ -191,8 +244,10 @@
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('analyze')">⬡ Cancer Mutation Analysis</div>
-  <div class="tab" onclick="switchTab('compare')">⬡ Hereditary Risk · Couple Screening</div>
+  <div class="tab active" data-tab="analyze" onclick="switchTab('analyze')">⬡ Cancer Mutation Analysis</div>
+  <div class="tab" data-tab="compare" onclick="switchTab('compare')">⬡ Hereditary Risk · Couple Screening</div>
+  <div class="tab" data-tab="about" onclick="switchTab('about')">⬡ About the AI</div>
+  <div class="tab" data-tab="evaluate" onclick="switchTab('evaluate')">⬡ Model Evaluation</div>
 </div>
 
 <main>
@@ -256,6 +311,65 @@
       </div>
     </div>
   </div>
+  <!-- ABOUT THE AI PANEL -->
+  <div class="panel" id="panel-about">
+    <div class="card">
+      <div class="card-title">Which AI model does MITAI use?</div>
+      <p class="about-p">A <b>Random Forest classifier</b> (scikit-learn, <b>100 decision trees</b>) that reads DNA like text. It predicts which of <b>7 gene families</b> a sequence belongs to — for example Tyrosine kinase, the family behind CML and HER2 breast cancer. The cancer links, mutation flags and risk score are then added by hand-written rules on top of that prediction.</p>
+      <div class="flow">
+        <div class="flow-box"><div class="t">DNA</div><div class="d">ATGTTTCGCATC…</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="t">6-mers</div><div class="d">ATGTTT TGTTTC GTTTCG…<br>overlapping "words"</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="t">Phrase counts</div><div class="d">4 k-mers in a row = 1 feature<br>248,487 known phrases</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box ai"><div class="t">Random Forest</div><div class="d">100 trees each vote<br>for a gene family</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="t">Rules</div><div class="d">cancer links, flags,<br>risk score 0–100</div></div>
+      </div>
+      <div class="cm-note">Teal = the machine-learning step. Everything else is ordinary code. Every analysis shows these steps with its own numbers under "How the AI analysed this sequence".</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">How the model works</div>
+        <ol class="about-list">
+          <li><b>K-mers:</b> DNA has no spaces, so it is cut into overlapping 6-letter pieces. A sequence of length L gives L − 5 k-mers.</li>
+          <li><b>Bag of words:</b> CountVectorizer treats every run of 4 consecutive k-mers as one "phrase" and counts them — the same technique used for spam filters.</li>
+          <li><b>Decision trees:</b> each tree asks yes/no questions like "does this phrase appear?" until it reaches a family.</li>
+          <li><b>Voting:</b> 100 trees are each trained on a random sample of data and features, then vote. The share of votes becomes the confidence %.</li>
+          <li><b>Training:</b> 6,882 real gene sequences (human, chimpanzee, dog) from a public genomics dataset, saved as model.pkl.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="card-title">Why a Random Forest?</div>
+        <ul class="about-list">
+          <li><b>Fits the data size:</b> ~7,000 sequences is small; deep networks need far more.</li>
+          <li><b>Handles sparse features:</b> each sequence uses a few thousand of 248,487 phrases, which trees handle well.</li>
+          <li><b>Robust:</b> averaging 100 trees avoids the overfitting of a single tree.</li>
+          <li><b>Gives probabilities:</b> vote shares give a confidence for all 7 families.</li>
+          <li><b>Cheap and explainable:</b> trains in seconds on a laptop, no GPU — fits our low-cost goal.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Other models and their trade-offs</div>
+      <table class="eval-table">
+        <tr><th>Model</th><th style="text-align:left">Trade-off</th></tr>
+        <tr><td>Naive Bayes</td><td style="text-align:left">Very fast, a classic baseline for k-mer counts; assumes features are independent</td></tr>
+        <tr><td>Support Vector Machine</td><td style="text-align:left">Strong on sparse text, but slower and gives no natural probabilities</td></tr>
+        <tr><td>CNN on raw DNA</td><td style="text-align:left">Learns motifs itself, but needs much more data and a GPU</td></tr>
+        <tr><td>DNA / protein language models (DNABERT, ESM-2)</td><td style="text-align:left">State of the art and our planned next stage; ESM-2 needs DNA translated to protein first</td></tr>
+      </table>
+      <div class="cm-note">Limits: the model predicts gene family, not cancer. The training data has no cancer labels, so cancer associations come from a literature-based lookup. Real detection would need labelled variant data such as ClinVar or COSMIC. See the Model Evaluation tab for honest accuracy figures.</div>
+    </div>
+  </div>
+
+  <!-- EVALUATION PANEL -->
+  <div class="panel" id="panel-evaluate">
+    <div id="eval-content"><div class="loader show"><div class="loader-text">Loading evaluation...</div></div></div>
+  </div>
 </main>
 
 <script>
@@ -264,7 +378,7 @@
 // - For the Vercel site, paste your Render URL below, e.g. 'https://mitai-backend.onrender.com'
 const BACKEND_URL = 'https://mitai-backend-0bt2.onrender.com/';
 const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
-const API = IS_LOCAL ? '' : BACKEND_URL;
+const API = IS_LOCAL ? '' : BACKEND_URL.replace(/\/+$/, '');  // remove trailing /
 
 async function callApi(path, body){
   let res;
@@ -341,7 +455,8 @@ function loadSample(t){
 }
 
 function switchTab(tab){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='analyze')||(i===1&&tab==='compare')));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  if(tab==='evaluate') loadEvaluation();
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+tab).classList.add('active');
 }
@@ -432,8 +547,66 @@ function renderAnalysis(data){
       <div class="base-comp" style="margin-top:6px">${baseComp}</div>
     </div>
 
+    ${renderTrace(data)}
+
     <button class="btn-pdf" onclick="downloadPDF()">⬇ Download Oncology Report (PDF)</button>
   `;
+}
+
+// ── AI PIPELINE TRACE: what the model did with THIS sequence ─────────────────
+function renderTrace(data){
+  const p=data.pipeline;
+  if(!p) return `<div class="info-row"><div class="info-label">How the AI analysed this sequence</div><div class="info-value">The server is running an older version. Redeploy the backend to see this.</div></div>`;
+  const maxVotes=Math.max(...p.tree_votes.map(v=>v.votes));
+  const votes=[...p.tree_votes].sort((a,b)=>b.votes-a.votes).map(v=>{
+    const win=v.votes===maxVotes;
+    const ticks=Array.from({length:p.n_trees},(_,i)=>`<div class="vote-tick ${i<v.votes?'on':''} ${win?'win':''}"></div>`).join('');
+    return `<div class="vote-row"><div class="vote-label ${win?'win':''}">${v.family}</div><div class="vote-track">${ticks}</div><div class="vote-n">${v.votes}</div></div>`;
+  }).join('');
+  const sp=p.score_parts||{};
+  const pctKnown=p.phrase_count? Math.round(p.known_features/p.phrase_count*100):0;
+  return `
+    <div class="card trace">
+      <div class="card-title">How the AI analysed this sequence</div>
+      <div class="trace-step">
+        <div class="trace-num">1</div>
+        <div class="trace-body">
+          <div class="trace-title">Clean the input<span class="trace-tag rule">CODE</span></div>
+          <div class="trace-text">Removed FASTA headers and spaces → <b>${data.sequence_length}</b> bases.</div>
+        </div>
+      </div>
+      <div class="trace-step">
+        <div class="trace-num">2</div>
+        <div class="trace-body">
+          <div class="trace-title">Split into ${p.kmer_size}-mers<span class="trace-tag rule">CODE</span></div>
+          <div class="trace-text">Overlapping ${p.kmer_size}-letter "words", shifting one base at a time → <b>${p.kmer_count.toLocaleString()}</b> k-mers.</div>
+          <div class="trace-code">${p.first_kmers.join('&nbsp;&nbsp;')}&nbsp;&nbsp;…</div>
+        </div>
+      </div>
+      <div class="trace-step">
+        <div class="trace-num">3</div>
+        <div class="trace-body">
+          <div class="trace-title">Turn words into numbers<span class="trace-tag rule">CODE</span></div>
+          <div class="trace-text">Every 4 k-mers in a row form one phrase (<b>${p.phrase_count.toLocaleString()}</b> phrases). CountVectorizer counts them against the <b>${p.vocabulary_size.toLocaleString()}</b> phrases learned in training; <b>${p.known_features.toLocaleString()}</b> distinct phrases here were recognised (~${pctKnown}%).</div>
+          <div class="trace-code">${p.first_phrase} → 1 feature</div>
+        </div>
+      </div>
+      <div class="trace-step ai">
+        <div class="trace-num">4</div>
+        <div class="trace-body">
+          <div class="trace-title">Random Forest votes<span class="trace-tag ai">AI MODEL</span></div>
+          <div class="trace-text">Each of the <b>${p.n_trees}</b> decision trees looked at those counts and voted. Winner: <b>${data.predicted_gene_family}</b> with ${data.confidence}% confidence.</div>
+          ${votes}
+        </div>
+      </div>
+      <div class="trace-step">
+        <div class="trace-num">5</div>
+        <div class="trace-body">
+          <div class="trace-title">Apply rules and score<span class="trace-tag rule">RULES</span></div>
+          <div class="trace-text">Pattern checks found <b>${(data.mutation_flags||[]).length}</b> flag(s). Risk = model uncertainty <b>${sp.uncertainty}</b> + flags <b>${sp.flags}</b> + cancer-linked family <b>${sp.family}</b> = ${sp.total_before_cap} → <b>${data.risk_score}</b>/100 (capped at 100).</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ── RENDER COMPARE ──────────────────────────────────────────────────────────
@@ -572,6 +745,77 @@ function downloadPDF(){
   doc.save(`MITAI_Oncology_Report_${Date.now()}.pdf`);
 }
 
+// ── MODEL EVALUATION ─────────────────────────────────────────────────────────
+// metrics.json is produced by evaluate.py and served as a static file,
+// so this tab works even while the Render server is asleep.
+let evalLoaded=false;
+async function loadEvaluation(){
+  if(evalLoaded) return;
+  const box=document.getElementById('eval-content');
+  try{
+    const res=await fetch('metrics.json',{cache:'no-store'});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    box.innerHTML=renderEvaluation(await res.json());
+    evalLoaded=true;
+  }catch(e){
+    box.innerHTML=`<div class="error-msg">⚠ Could not load metrics.json (${e.message}). Run <b>python evaluate.py</b> and make sure metrics.json is in the project folder.</div>`;
+  }
+}
+
+function renderEvaluation(m){
+  const short=['GPCR','Kinase','Phosph.','Synthetase','Synthase','Ion ch.','TF'];
+  const L=m.leakage, R=m.random_split, G=m.grouped_split, C=m.cross_species;
+  const rows=m.per_class.map(c=>`<tr>
+      <td>${c.family}</td>
+      <td class="${c.precision<70?'weak':''}">${c.precision}%</td>
+      <td class="${c.recall<70?'weak':''}">${c.recall}%</td>
+      <td class="${c.f1<70?'weak':''}">${c.f1}%</td>
+      <td>${c.support}</td></tr>`).join('');
+  const cmRows=m.confusion_matrix.map((row,i)=>{
+    const total=row.reduce((a,b)=>a+b,0)||1;
+    const cells=row.map((v,j)=>{
+      const share=v/total;
+      const bg= i===j ? `rgba(0,229,204,${0.12+share*0.6})` : (v ? `rgba(255,68,102,${0.08+share*1.5})` : 'var(--panel2)');
+      return `<td style="background:${bg}" title="${m.class_names[i]} predicted as ${m.class_names[j]}: ${v}">${v||''}</td>`;
+    }).join('');
+    return `<tr><th class="row">${short[i]}</th>${cells}</tr>`;
+  }).join('');
+  return `
+    <div class="card">
+      <div class="card-title">How well does the classifier really work?</div>
+      <div class="eval-intro">
+        The original random 80/20 split scored <b>${R.accuracy}%</b>. But the dataset has <b>${L.exact_duplicates_in_dataset}</b> exact duplicate sequences,
+        and <b>${L.test_with_90pct_similar_train_seq_pct}%</b> of test sequences had a ≥90% similar "twin" in the training set — so part of that score is memorisation.
+        Keeping sequences that are ≥${m.similarity_threshold_pct}% similar on the same side of the split gives the honest number: <b>${G.accuracy}%</b>.
+      </div>
+      <div class="metrics-grid">
+        <div class="metric"><div class="metric-value">${R.accuracy}%</div><div class="metric-label">Random split</div><div class="metric-sub">optimistic · ${R.test_size} test seqs</div></div>
+        <div class="metric honest"><div class="metric-value">${G.accuracy}%</div><div class="metric-label">Similarity-grouped</div><div class="metric-sub">honest · macro F1 ${G.macro_f1}%</div></div>
+        <div class="metric"><div class="metric-value">${C.accuracy}%</div><div class="metric-label">Unseen species</div><div class="metric-sub">train human+chimp · test dog</div></div>
+      </div>
+      <div class="cm-note">For comparison, always guessing the most common family scores ${G.majority_baseline_accuracy}%. All numbers are gene-family classification, not cancer detection.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Per gene family · similarity-grouped split</div>
+        <table class="eval-table">
+          <tr><th>Family</th><th>Precision</th><th>Recall</th><th>F1</th><th>Test n</th></tr>
+          ${rows}
+        </table>
+        <div class="cm-note">Precision: when the model says this family, how often it is right. Recall: of the real members, how many it finds. Orange = below 70%.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Confusion matrix · rows = true, columns = predicted</div>
+        <div class="cm-wrap"><table class="cm">
+          <tr><th></th>${short.map(s=>`<th>${s}</th>`).join('')}</tr>
+          ${cmRows}
+        </table></div>
+        <div class="cm-note">Teal diagonal = correct. Red = mistakes; hover a cell for details. Generated ${m.generated} by evaluate.py.</div>
+      </div>
+    </div>`;
+}
+
 // ── API CALLS ────────────────────────────────────────────────────────────────
 async function runAnalysis(){
   const seq=document.getElementById('seq-input').value.trim();
@@ -606,7 +850,7 @@ async function runCompare(){
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.key==='Enter'){
     if(document.getElementById('panel-analyze').classList.contains('active')) runAnalysis();
-    else runCompare();
+    else if(document.getElementById('panel-compare').classList.contains('active')) runCompare();
   }
 });
 </script>
